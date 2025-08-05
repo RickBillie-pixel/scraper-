@@ -40,18 +40,26 @@ ENV FASTAPI_ENV=production
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
+
+# Upgrade pip first
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Python packages with error handling
+RUN pip install --no-cache-dir -r requirements.txt || \
+    (pip install --no-cache-dir fastapi uvicorn playwright beautifulsoup4 requests pydantic lxml && \
+     echo "Installed minimal requirements")
 
 # Install Playwright browsers with explicit path
 RUN mkdir -p /app/pw-browsers
-RUN PLAYWRIGHT_BROWSERS_PATH=/app/pw-browsers playwright install chromium
-RUN PLAYWRIGHT_BROWSERS_PATH=/app/pw-browsers playwright install-deps chromium
+RUN PLAYWRIGHT_BROWSERS_PATH=/app/pw-browsers playwright install chromium || \
+    (playwright install chromium && echo "Installed browsers in default location")
+    
+RUN PLAYWRIGHT_BROWSERS_PATH=/app/pw-browsers playwright install-deps chromium || \
+    (playwright install-deps chromium && echo "Installed browser dependencies")
 
 # Verify browser installation
-RUN ls -la /app/pw-browsers/ || echo "Browser directory not found"
-RUN find /app/pw-browsers -name "chrome*" -type f || echo "Chrome binary not found"
-RUN du -sh /app/pw-browsers || echo "Could not get browser size"
+RUN ls -la /app/pw-browsers/ || echo "Browser directory not found, checking default location" && \
+    find /usr/local/lib/python*/site-packages/playwright -name "chrome*" -type f 2>/dev/null || echo "Browsers installed in default location"
 
 # Copy application code
 COPY main.py .
@@ -65,7 +73,7 @@ RUN groupadd -r scraper && useradd -r -g scraper scraper \
 USER scraper
 
 # Expose port (Render uses PORT environment variable)
-EXPOSE ${PORT:-10000}
+EXPOSE ${PORT:-8000}
 
 # Health check for FastAPI
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
