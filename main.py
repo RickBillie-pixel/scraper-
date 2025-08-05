@@ -16,6 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from playwright.async_api import async_playwright
 import uvicorn
 import hashlib
+import os
 from dataclasses import dataclass
 
 # Configure logging
