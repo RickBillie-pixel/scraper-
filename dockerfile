@@ -65,7 +65,7 @@ RUN groupadd -r scraper && useradd -r -g scraper scraper \
 USER scraper
 
 # Expose port (Render uses PORT environment variable)
-EXPOSE ${PORT:-8000}
+EXPOSE ${PORT:-10000}
 
 # Health check for FastAPI
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
