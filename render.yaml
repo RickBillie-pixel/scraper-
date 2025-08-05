@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: fastapi-web-scraper
+    runtime: docker
+    plan: standard  # Standard plan for better performance with Playwright
+    healthCheckPath: /health
+    
+    # Environment variables for FastAPI and Playwright
+    envVars:
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: "/app/pw-browsers"
+      - key: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
+        value: "0"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      - key: FASTAPI_ENV
+        value: "production"
+      - key: UVICORN_WORKERS
+        value: "1"
+      - key: TIMEOUT_KEEP_ALIVE
+        value: "120"
+        
+    # Resource allocation
+    disk:
+      name: fastapi-scraper-disk
+      mountPath: /tmp
+      sizeGB: 3  # Increased for browser cache and temp files
+      
+    # Build configuration
+    buildCommand: echo "Building FastAPI web scraper..."
+    
+    # Auto-deploy settings
+    autoDeploy: true
+    
+    # Custom start command (optional, already handled in Dockerfile)
+    # startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
